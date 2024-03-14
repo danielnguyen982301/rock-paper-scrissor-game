@@ -4,7 +4,8 @@ export const getRandomGameItem = (gamesItems) => {
 };
 
 export const calculatorUserWinner = (user1GameItem, user2GameItem) => {
-  if (user1GameItem.id === user2GameItem.id) return "Peace";
-  else if (user1GameItem.winItemIds.includes(user2GameItem.id)) return "Win";
-  else return "Lost";
+  if (user1GameItem.id === user2GameItem.id) return "Draw";
+  else if (user1GameItem.winItemIds.includes(user2GameItem.id))
+    return "Player Won";
+  else return "Player Lost";
 };

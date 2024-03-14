@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import Result from "./Result";
+import React, { useState, useEffect, useRef } from "react";
 import Display from "./Display";
 import Choices from "./Choices";
 
@@ -27,34 +26,74 @@ const gameItems = [
 ];
 
 export default function Main() {
-  const [result, setResult] = useState("N/N");
+  const [result, setResult] = useState("");
   const [userGameItem, setUserGameItem] = useState(null);
   const [computerGameItem, setComputerGameItem] = useState(null);
+  const [countWin, setCountWin] = useState(0);
+  const [countLoss, setCountLoss] = useState(0);
+  const [round, setRound] = useState(1);
+  const [enabled, setEnabled] = useState(true);
+  const timerRef = useRef(null);
 
   const handleGameItemChange = (gameItem) => {
-    setUserGameItem({ ...gameItem });
+    if (enabled) {
+      setEnabled(false);
+      const newUserItem = gameItem;
+      clearInterval(timerRef.current);
+      setUserGameItem({ ...gameItem });
+      setResult(calculatorUserWinner(newUserItem, computerGameItem));
+      setTimeout(() => {
+        setEnabled(true);
+        setUserGameItem(null);
+        setResult("");
+        setRound((round) => round + 1);
+      }, 5000);
+    }
   };
 
   useEffect(() => {
-    if (userGameItem) {
-      const computerNewItem = getRandomGameItem(gameItems);
+    let computerNewItem;
+
+    timerRef.current = setTimeout(() => {
+      computerNewItem = getRandomGameItem(gameItems);
       setComputerGameItem({ ...computerNewItem });
-      setResult(calculatorUserWinner(userGameItem, computerNewItem));
+    }, 50);
+
+    return () => clearTimeout(timerRef.current);
+  }, [computerGameItem, round]);
+
+  useEffect(() => {
+    if (result === "Player Won") {
+      setCountWin((prevCount) => prevCount + 1);
+    } else if (result === "Player Lost") {
+      setCountLoss((prevCount) => prevCount + 1);
     }
-  }, [userGameItem]);
+  }, [result]);
+
+  const resultColor =
+    result === "Player Won"
+      ? "greenyellow"
+      : result === "Player Lost"
+      ? "red"
+      : "purple";
 
   return (
-    <div className="conainer">
+    <div className="container">
       <div className="main">
-        <Result
-          user1GameItem={"Your code here"}
-          user2GameItem={"Your code here"}
-          result={"Your code here"}
+        <Display
+          user1GameItem={userGameItem}
+          user2GameItem={computerGameItem}
+          result={result}
+          resultColor={resultColor}
+          wins={countWin}
+          losses={countLoss}
         />
-        <Display />
+        <div className="game-round">
+          ROUND <span>{round}</span>
+        </div>
         <Choices
-          gameItems={"Your code here"}
-          handleGameItemChange={"Your code here"}
+          gameItems={gameItems}
+          handleGameItemChange={handleGameItemChange}
         />
       </div>
     </div>
